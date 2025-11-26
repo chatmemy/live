@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Needs</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/daseyqhav/image/upload/v1757752157/Your_Needs_logo_hb708c.png" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff, #ffffff);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column; /* vertical */
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 50px;
+      animation: fadeInDown 1s ease;
+    }
+
+    header img {
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin: 0;
+      color: #111;
+      font-weight: 700;
+    }
+
+    .counters {
+      display: flex;
+      flex-direction: column; /* vertical */
+      gap: 25px;
+      margin-bottom: 50px;
+      align-items: center;
+      animation: fadeInUp 1.2s ease;
+    }
+
+    .counter-box {
+      background: #fff;
+      padding: 25px 35px;
+      border-radius: 20px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      min-width: 220px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .counter-box:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .counter-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0077ff;
+      margin-bottom: 10px;
+    }
+
+    .counter-label {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column; /* vertical */
+      gap: 20px;
+      align-items: center;
+      animation: fadeIn 1.5s ease;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 16px 34px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      width: 220px; /* সমান button size */
+      text-align: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+    }
+
+    .whatsapp-btn {
+      background: #25d366;
+    }
+
+    .facebook-btn {
+      background: #1877f2;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      .counter-box {
+        min-width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://res.cloudinary.com/daseyqhav/image/upload/v1757752157/Your_Needs_logo_hb708c.png" alt="Shop Logo">
+    <h1>Welcome to Your Needs</h1>
+  </header>
+
+  <div class="counters">
+    <div class="counter-box">
+      <div class="counter-number" id="orders">0+</div>
+      <div class="counter-label">Completed Orders</div>
+    </div>
+
+    <div class="counter-box">
+      <div class="counter-number" id="visitors">0+</div>
+      <div class="counter-label">Daily Visitors</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <a href="https://wa.me/8801624339750" target="_blank" class="btn whatsapp-btn">
+      Contact on WhatsApp
+    </a>
+    <a href="https://www.facebook.com/share/1LfXdsmwpN/" target="_blank" class="btn facebook-btn">
+      Visit Facebook Page
+    </a>
+  </div>
+
+  <script>
+    function animateCounter(id, target, duration) {
+      const element = document.getElementById(id);
+      let start = 0;
+      const increment = target / (duration / 16);
+
+      function updateCounter() {
+        start += increment;
+        if (start < target) {
+          element.textContent = Math.floor(start) + "+";
+          requestAnimationFrame(updateCounter);
+        } else {
+          element.textContent = target + "+";
+        }
+      }
+
+      updateCounter();
+    }
+
+    window.onload = () => {
+      animateCounter("orders", 8000, 2000);
+      animateCounter("visitors", 500, 2000);
+    };
+  </script>
+</body>
+</html>
