@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Needs</title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/daseyqhav/image/upload/v1757752157/Your_Needs_logo_hb708c.png" />
+  <link rel="icon" type="image/png" id="favicon" href="https://res.cloudinary.com/daseyqhav/image/upload/v1757756714/Your_need_no_bg_k5h3w6.png" />
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
 
   <style>
     body {
@@ -25,7 +28,7 @@
 
     header {
       display: flex;
-      flex-direction: column; /* vertical */
+      flex-direction: column;
       align-items: center;
       gap: 10px;
       margin-bottom: 50px;
@@ -48,7 +51,7 @@
 
     .counters {
       display: flex;
-      flex-direction: column; /* vertical */
+      flex-direction: column;
       gap: 25px;
       margin-bottom: 50px;
       align-items: center;
@@ -83,7 +86,7 @@
 
     .buttons {
       display: flex;
-      flex-direction: column; /* vertical */
+      flex-direction: column;
       gap: 20px;
       align-items: center;
       animation: fadeIn 1.5s ease;
@@ -100,7 +103,7 @@
       text-decoration: none;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       transition: transform 0.25s ease, box-shadow 0.25s ease;
-      width: 220px; /* সমান button size */
+      width: 220px;
       text-align: center;
     }
 
@@ -109,50 +112,25 @@
       box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
     }
 
-    .whatsapp-btn {
-      background: #25d366;
-    }
+    .whatsapp-btn { background: #25d366; }
+    .facebook-btn { background: #1877f2; }
 
-    .facebook-btn {
-      background: #1877f2;
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive */
     @media (max-width: 600px) {
-      header h1 {
-        font-size: 1.6rem;
-      }
-
-      .counter-box {
-        min-width: 100%;
-      }
-
-      .btn {
-        width: 100%;
-      }
+      header h1 { font-size: 1.6rem; }
+      .counter-box { min-width: 100%; }
+      .btn { width: 100%; }
     }
   </style>
 </head>
 <body>
+
   <header>
-    <img src="https://res.cloudinary.com/daseyqhav/image/upload/v1757752157/Your_Needs_logo_hb708c.png" alt="Shop Logo">
-    <h1>Welcome to Your Needs</h1>
+    <img id="brand-icon" src="https://res.cloudinary.com/daseyqhav/image/upload/v1757752157/Your_Needs_logo_hb708c.png" alt="Shop Logo">
+    <h1 id="brand-name">Welcome to Your Needs</h1>
   </header>
 
   <div class="counters">
@@ -160,7 +138,6 @@
       <div class="counter-number" id="orders">0+</div>
       <div class="counter-label">Completed Orders</div>
     </div>
-
     <div class="counter-box">
       <div class="counter-number" id="visitors">0+</div>
       <div class="counter-label">Daily Visitors</div>
@@ -168,37 +145,88 @@
   </div>
 
   <div class="buttons">
-    <a href="https://wa.me/8801624339750" target="_blank" class="btn whatsapp-btn">
-      Contact on WhatsApp
-    </a>
-    <a href="https://www.facebook.com/share/1LfXdsmwpN/" target="_blank" class="btn facebook-btn">
-      Visit Facebook Page
-    </a>
+    <a href="#" id="whatsapp-link" target="_blank" class="btn whatsapp-btn">Contact on WhatsApp</a>
+    <a href="#" id="facebook-link" target="_blank" class="btn facebook-btn">Visit Facebook Page</a>
   </div>
 
-  <script>
-    function animateCounter(id, target, duration) {
-      const element = document.getElementById(id);
-      let start = 0;
-      const increment = target / (duration / 16);
+<script>
 
-      function updateCounter() {
-        start += increment;
-        if (start < target) {
-          element.textContent = Math.floor(start) + "+";
-          requestAnimationFrame(updateCounter);
-        } else {
-          element.textContent = target + "+";
-        }
+  /* ------------------------------------
+     Firebase Config (YOU WILL ADD LATER)
+     ------------------------------------ */
+  const firebaseConfig = {
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",   // ← THIS IS THE ONLY IMPORTANT ONE
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function animateCounter(id, target, duration) {
+    const element = document.getElementById(id);
+    let start = 0;
+    const increment = target / (duration / 16);
+    function updateCounter() {
+      start += increment;
+      if (start < target) {
+        element.textContent = Math.floor(start) + "+";
+        requestAnimationFrame(updateCounter);
+      } else {
+        element.textContent = target + "+";
       }
+    }
+    updateCounter();
+  }
 
-      updateCounter();
+  window.onload = async () => {
+
+    const tag = window.location.pathname.split("/").filter(Boolean).pop();
+    
+    if (!tag) {
+      window.location.href = "/contact/login";
+      return;
     }
 
-    window.onload = () => {
-      animateCounter("orders", 8000, 2000);
-      animateCounter("visitors", 500, 2000);
-    };
-  </script>
+    animateCounter("orders", 8000, 2000);
+    animateCounter("visitors", 500, 2000);
+
+    try {
+      const snap = await db.ref("data/" + tag).get();
+      if (!snap.exists()) {
+        window.location.href = "/contact/login";
+        return;
+      }
+
+      const d = snap.val();
+
+      if (d.icon) {
+        document.getElementById("brand-icon").src = d.icon;
+        document.getElementById("favicon").href = d.icon;
+      }
+
+      if (d.name) {
+        document.getElementById("brand-name").textContent = d.name;
+        document.title = d.name;
+      }
+
+      if (d.whatsapp) document.getElementById("whatsapp-link").href = d.whatsapp;
+      if (d.fb) document.getElementById("facebook-link").href = d.fb;
+
+      if (d.visitor) animateCounter("visitors", parseInt(d.visitor), 2000);
+      if (d.complete) animateCounter("orders", parseInt(d.complete), 2000);
+
+    } catch (e) {
+      console.error(e);
+      window.location.href = "/contact/login";
+    }
+  };
+
+</script>
+
 </body>
 </html>
