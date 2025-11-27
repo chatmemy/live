@@ -1,55 +1,431 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ChatMe</title>
+<title>VIP Panel Chat</title>
+<style>
+:root {
+  --primary: #0b74de;
+  --bg: #f4f7fb;
+  --bot-bg: #e9f1fb;
+  --user-bg: var(--primary);
+  --text-dark: #222;
+  --text-light: #fff;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: "Poppins", system-ui, Arial;
+  background: var(--bg);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.chat-container {
+  width: 100%;
+  max-width: 430px;
+  height: min(90vh, 760px);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.chat-header {
+  background: linear-gradient(135deg, #0b74de, #1c8ef7);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  position: relative;
+}
+.chat-header img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  object-fit: cover;
+}
+.header-text h3 { margin:0; font-size:18px; font-weight:600;}
+.header-text .small { font-size:13px; opacity:0.9; display:flex; align-items:center; gap:6px;}
+.online-dot { width:8px; height:8px; border-radius:50%; background:#00e676; box-shadow:0 0 6px #00e676; }
+
+/* Call & Message Buttons */
+.header-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.header-buttons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:6px 10px;
+  border-radius:8px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  text-decoration: none;
+  font-size:14px;
+  gap:4px;
+}
+.header-buttons a:hover {
+  background: rgba(255,255,255,0.35);
+}
+.header-buttons svg { width:16px; height:16px; fill:#fff; }
+
+/* messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8faff;
+  min-height: 440px;
+  scroll-behavior: smooth;
+}
+.messages::-webkit-scrollbar { width:6px;}
+.messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius:10px;}
+.msg { max-width:80%; padding:12px 16px; border-radius:18px; line-height:1.5; font-size:15px; word-wrap: break-word; box-shadow:0 2px 10px rgba(0,0,0,0.05);}
+.msg.user { align-self:flex-end; background:var(--user-bg); color:var(--text-light); border-bottom-right-radius:6px;}
+.msg.bot { align-self:flex-start; background:var(--bot-bg); color:var(--text-dark); border-bottom-left-radius:6px;}
+.msg img.inline-thumb { width:100%; max-width:220px; border-radius:12px; margin-bottom:6px; display:block; }
+
+/* typing indicator styles */
+.msg.typing { display:flex; align-items:center; gap:8px; padding:10px 14px; width:auto; max-width:60%;}
+.typing-bubble { background: rgba(11,116,222,0.08); padding:8px 10px; border-radius:12px; display:flex; align-items:center; gap:6px;}
+.typing-dot { width:8px; height:8px; border-radius:50%; background:#0b74de; opacity:0.25; transform: translateY(0); }
+@keyframes bounceDots {
+  0% { opacity:0.25; transform: translateY(0); }
+  50% { opacity:1; transform: translateY(-6px); }
+  100% { opacity:0.25; transform: translateY(0); }
+}
+.typing-dot:nth-child(1) { animation: bounceDots 1s infinite; animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation: bounceDots 1s infinite; animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation: bounceDots 1s infinite; animation-delay: 0.3s; }
+
+/* input */
+.input-row { display:flex; gap:8px; padding:12px; border-top:1px solid #eef3fb; background:#fafcff;}
+.input-row input { flex:1; padding:10px 14px; border-radius:10px; border:1px solid #d7e3f5; outline:none; font-size:15px;}
+.input-row input:focus { border-color: var(--primary); box-shadow:0 0 0 3px rgba(11,116,222,0.15);} 
+.input-row button { padding:10px 16px; border-radius:10px; border:none; background:var(--primary); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+.input-row button:hover { background:#0966c2;}
+a { text-decoration:none; font-weight:500;}
+
+/* Question Picker */
+#question-picker {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  right: 20px;
+  margin: 0 auto;
+  width: 400px;
+  max-width: 95%;
+  background:#fff;
+  border:1px solid #d7e3f5;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  display:none;
+  max-height:250px;
+  overflow-y:auto;
+  z-index:1000;
+  padding:8px;
+}
+.question-item {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  cursor:pointer;
+  border-radius:8px;
+  transition:0.15s;
+}
+.question-item:hover { background:#eef3fb;}
+.question-item img { width:40px; height:40px; object-fit:cover; border-radius:6px; }
+.question-item span { flex:1; font-size:14px; }
+
+/* small utilities */
+.picker-header { display:flex; gap:8px; align-items:center; padding:6px 8px; }
+.picker-search { flex:1; padding:8px; border-radius:8px; border:1px solid #e6eef9; outline:none; }
+.picker-empty { padding:12px; text-align:center; color:#666; font-size:14px; }
+</style>
 </head>
 <body>
-<div id="content">Loading...</div>
+<div class="chat-container" role="application" aria-label="VIP Panel Chat">
+  <div class="chat-header">
+    <img src="https://cdn0.iconfinder.com/data/icons/kameleon-free-pack-rounded/110/Hacker-512.png" alt="AI Icon">
+    <div class="header-text">
+      <h3>VIP Panel</h3>
+      <div class="small">
+        <div class="online-dot" aria-hidden="true"></div>
+        Online
+      </div>
+    </div>
 
+    <div class="header-buttons" role="group" aria-label="contact buttons">
+      <a href="tel:+380947111071" title="Call">
+        <span class="material-icons" aria-hidden="true">call</span>
+      </a>
+
+      <a href="https://wa.me/380947111071" target="_blank" rel="noopener" title="Message">
+        <span class="material-icons" aria-hidden="true">chat</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="messages" id="chat-box" aria-live="polite"></div>
+
+  <div class="input-row">
+    <!-- keep readonly to force use of question-picker.
+         If you want to allow typing, remove 'readonly' attribute -->
+    <input id="user-input" type="text" placeholder="Message (click to choose) " readonly aria-label="Message input" />
+    <button id="send-btn" title="Send" aria-label="Open questions">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" fill="#fff"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="question-picker" role="dialog" aria-modal="false" aria-label="Question picker">
+    <div class="picker-header">
+      <input id="picker-search" class="picker-search" placeholder="Search Question..." aria-label="Search questions" />
+    </div>
+    <div id="picker-list"></div>
+  </div>
+</div>
 
 <script>
-// ----------- Extract ID from URL ---------------
-const path = window.location.pathname.replace("/", "");
-const content = document.getElementById("content");
+/* ====== utilities ====== */
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const questionPicker = document.getElementById("question-picker");
+const pickerList = document.getElementById("picker-list");
+const pickerSearch = document.getElementById("picker-search");
+const sendBtn = document.getElementById("send-btn");
 
+let questions = {}; // { key: "question text" }
+let images = {};    // { key: "img url" }
+let answers = {};   // { key: "answer string or array" }
 
-// ----------- Firebase Config (You will fill) ---------------
-const firebaseConfig = {
-databaseURL: "" // <-- তোমার ফায়ারবেস URL এখানে বসাবে
-};
+/* escape html to avoid injection */
+function escapeHtml(unsafe) {
+  return unsafe
+    .replaceAll('&', "&amp;")
+    .replaceAll('<', "&lt;")
+    .replaceAll('>', "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
+/* linkify safely - first escape, then replace urls */
+function linkify(text, who='bot') {
+  const color = who === 'user' ? 'orange' : '#0b74de';
+  const escaped = escapeHtml(text);
+  // simple URL regex
+  return escaped.replace(/(https?:\/\/[^\s]+)/g, (url) => {
+    const safe = escapeHtml(url);
+    return `<a href="${safe}" target="_blank" rel="noopener" style="color:${color}; text-decoration: underline;">${safe}</a>`;
+  });
+}
 
-// Firebase Load
-import("https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js").then(({ initializeApp }) => {
-return import("https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js").then(({ getDatabase, ref, get }) => {
+/* single function to add message */
+function addMessage(sender, text, imgUrl=null) {
+  const div = document.createElement("div");
+  div.classList.add("msg", sender);
 
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-
-if (!path) {
-content.innerHTML = "No ID Provided";
-return;
+  let content = '';
+  if (imgUrl) {
+    const isHttp = /^https?:\/\//i.test(imgUrl);
+    if (isHttp) {
+      content += `<img class="inline-thumb" src="${escapeHtml(imgUrl)}" loading="lazy" alt="img" />`;
+    }
+  }
+  // এখানে \n কে <br> তে রূপান্তর করা হচ্ছে
+  content += linkify(text, sender).replace(/\n/g, "<br>");
+  div.innerHTML = content;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div;
 }
 
 
-const dataRef = ref(db, path);
-
-
-get(dataRef).then((snapshot) => {
-if (snapshot.exists()) {
-content.innerHTML = `<pre>${JSON.stringify(snapshot.val(), null, 2)}</pre>`;
-} else {
-content.innerHTML = "No Data Found";
+/* show picker items */
+function renderPicker(filter='') {
+  pickerList.innerHTML = '';
+  const keys = Object.keys(questions).filter(k => {
+    const q = questions[k] || '';
+    return q.toLowerCase().includes(filter.toLowerCase());
+  });
+  if (keys.length === 0) {
+    pickerList.innerHTML = `<div class="picker-empty">No questions found.</div>`;
+    return;
+  }
+  for (let key of keys) {
+    const item = document.createElement('div');
+    item.classList.add('question-item');
+    item.tabIndex = 0;
+    const imgTag = (images[key] && images[key].trim() !== '') ? `<img src="${escapeHtml(images[key])}" alt="" loading="lazy" />` : '';
+    item.innerHTML = `${imgTag}<span>${escapeHtml(questions[key])}</span>`;
+    item.addEventListener('click', () => selectQuestion(key));
+    item.addEventListener('keypress', (e) => { if (e.key === 'Enter') selectQuestion(key); });
+    pickerList.appendChild(item);
+  }
 }
-}).catch((err) => {
-content.innerHTML = "Error loading data";
+
+/* Create & show typing indicator element */
+function showTypingIndicator() {
+  const typingDiv = document.createElement('div');
+  typingDiv.classList.add('msg', 'bot', 'typing');
+  typingDiv.setAttribute('aria-live', 'polite');
+  typingDiv.setAttribute('aria-busy', 'true');
+
+  // typing bubble with three animated dots
+  typingDiv.innerHTML = `
+    <div class="typing-bubble" aria-hidden="true">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+
+  chatBox.appendChild(typingDiv);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return typingDiv;
+}
+
+/* select a question -> show as user msg + bot reply (with typing) */
+function selectQuestion(key) {
+  questionPicker.style.display = 'none';
+  const imgUrl = images[key] || null;
+  addMessage('user', questions[key], imgUrl);
+
+  let reply = "No answer available";
+  if (answers[key]) {
+    if (Array.isArray(answers[key])) {
+      const arr = answers[key];
+      reply = arr[Math.floor(Math.random() * arr.length)];
+    } else {
+      reply = answers[key];
+    }
+  }
+
+  // show typing indicator while "bot is typing"
+  const typingEl = showTypingIndicator();
+
+  // keep typing for a short, slightly-random time to feel natural
+  const min = 700; // ms
+  const variability = 600; // ms
+  const delay = Math.floor(min + Math.random() * variability);
+
+  setTimeout(() => {
+    // remove typing indicator then show real reply
+    if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
+    addMessage('bot', reply);
+  }, delay);
+}
+
+/* show/hide picker */
+function showQuestionPicker() {
+  renderPicker('');
+  questionPicker.style.display = 'block';
+  pickerSearch.value = '';
+}
+function hideQuestionPicker() {
+  questionPicker.style.display = 'none';
+}
+
+/* click handlers */
+userInput.addEventListener('click', showQuestionPicker);
+sendBtn.addEventListener('click', showQuestionPicker);
+
+document.addEventListener('click', (e) => {
+  if (!userInput.contains(e.target) && !questionPicker.contains(e.target) && e.target !== sendBtn) {
+    hideQuestionPicker();
+  }
 });
+
+/* filter search */
+pickerSearch.addEventListener('input', (e) => {
+  renderPicker(e.target.value || '');
 });
+
+/* ====== data loading ====== */
+async function loadData() {
+  // try to fetch JSON; if fails, provide fallback defaults
+  try {
+    const qRes = await fetch('question.json', {cache: 'no-store'});
+    if (!qRes.ok) throw new Error('question.json not found');
+    questions = await qRes.json();
+  } catch (err) {
+    console.warn('Failed to load question.json — using defaults. Reason:', err);
+    // fallback sample
+    questions = {
+      "q1": "প্যানেল ডাউনলোড করার লিংক দাও",
+      "q2": "কিভাবে প্যানেল সেটাপ করব ?",
+      "q3": "প্যানেল ব্যবহার করলে আইডির কোন সমস্যা হবে ?"
+    };
+  }
+
+  try {
+    const iRes = await fetch('image.json', {cache: 'no-store'});
+    if (!iRes.ok) throw new Error('image.json not found');
+    images = await iRes.json();
+  } catch (err) {
+    console.warn('Failed to load image.json — using none.', err);
+    images = {};
+  }
+
+  try {
+    const aRes = await fetch('answer.json', {cache: 'no-store'});
+    if (!aRes.ok) throw new Error('answer.json not found');
+    answers = await aRes.json();
+  } catch (err) {
+    console.warn('Failed to load answer.json — using defaults.', err);
+    answers = {
+      "q1": "📥 প্যানেল ডাউনলোড লিংক:\n👉 https://vippanel.xchangebd.xyz",
+      "q2": "🎥 সম্পূর্ণ ডাউনলোড থেকে সেটআপ প্রক্রিয়া দেখতে এই ভিডিওটি দেখুন:\n👉 https:\/\/youtube.com\/shorts\/HS7KxiE5EHM?si=1-KoWnXZ0PdFT4tg",
+      "q3": "👑 ভিআইপি প্যানেল সম্পূর্ণভাবে অ্যান্টি-ব্যান! 🔒✨\n\nআপনি এখন নিশ্চিন্তে যেকোনো ছোট বা বড় আইডিতে 🆔\nএই প্যানেল ব্যবহার করে খেলতে পারবেন 🎮🔥\n\n💡 কেন এবং কীভাবে আমাদের প্যানেল পুরোপুরি অ্যান্টি-ব্যান,\nতা বিস্তারিত জানতে নিচের ভিডিওটি দেখে নিন 🎥👇\n\n🔗 ভিডিও লিংক: https:\/\/youtu.be\/UM0X49oD5ww?si=zYGh7IcT_QxIXcsY"
+    };
+  }
+}
+
+/* init */
+window.addEventListener('load', async () => {
+  await loadData();
+
+  // Load welcome message from default.json
+  try {
+    const res = await fetch('default.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('default.json not found');
+    const def = await res.json();
+
+    let welcomeMsg = "স্বাগতম!"; // fallback message
+
+    if (def.welcome) {
+      if (Array.isArray(def.welcome)) {
+        // pick a random one if it's an array
+        const arr = def.welcome;
+        welcomeMsg = arr[Math.floor(Math.random() * arr.length)];
+      } else if (typeof def.welcome === 'string') {
+        welcomeMsg = def.welcome;
+      }
+    }
+
+    addMessage('bot', welcomeMsg);
+  } catch (err) {
+    console.warn("Welcome message not found, using default.", err);
+    addMessage('bot', 'স্বাগতম! নিচের বোতাম চাপলে প্রশ্নগুলো দেখতে পারবে।');
+  }
 });
+
 </script>
 </body>
 </html>
